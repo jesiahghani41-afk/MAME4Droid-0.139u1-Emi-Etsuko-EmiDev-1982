@@ -13,12 +13,18 @@
 ***************************************************************************/
 
 #include "emu.h"
-#include "cpu/z80/z80.h"
-#include "cpu/s2650/s2650.h"
-#include "sound/ay8910.h"
-#include "machine/8255ppi.h"
-#include "includes/galaxold.h"
 #include "emietsko.h"
+
+#include "cpu/s2650/s2650.h"
+#include "cpu/z80/z80.h"
+#include "machine/gen_latch.h"
+#include "machine/i8255.h"
+#include "machine/watchdog.h"
+#include "sound/ay8910.h"
+#include "speaker.h"
+
+#include "2650dasm.h"
+#include "machine/z80daisy.h"
 
 /* ----------------- Memory Maps ----------------- */
 
@@ -37,8 +43,8 @@ static ADDRESS_MAP_START( emietsko_map, ADDRESS_SPACE_PROGRAM, 8 )
 	AM_RANGE(0x6806, 0x6806) AM_WRITE(galaxold_flip_screen_x_w)
 	AM_RANGE(0x6807, 0x6807) AM_WRITE(galaxold_flip_screen_y_w)
 	AM_RANGE(0x7000, 0x7000) AM_READ(watchdog_reset_r)
-	AM_RANGE(0x8100, 0x8103) AM_DEVREADWRITE("ppi8255_0", ppi8255_r, ppi8255_w)
-	AM_RANGE(0x8200, 0x8203) AM_DEVREADWRITE("ppi8255_1", ppi8255_r, ppi8255_w)
+	AM_RANGE(0x8100, 0x8103) AM_DEVREADWRITE("ppi8255_0", i8255_r, i8255_w)
+	AM_RANGE(0x8200, 0x8203) AM_DEVREADWRITE("ppi8255_1", i8255_r, i8255_w)
 ADDRESS_MAP_END
 
 static ADDRESS_MAP_START( emietsko_sound_map, ADDRESS_SPACE_PROGRAM, 8 )
@@ -107,8 +113,8 @@ static MACHINE_DRIVER_START( emietsko )
 	MDRV_CPU_PROGRAM_MAP(emietsko_sound_map)
 	MDRV_CPU_IO_MAP(emietsko_sound_io_map)
 
-	MDRV_PPI8255_ADD( "ppi8255_0", scramble_ppi8255_0_intf )
-	MDRV_PPI8255_ADD( "ppi8255_1", scramble_ppi8255_1_intf )
+	MDRV_I8255_ADD( "ppi8255_0", scramble_ppi8255_0_intf )
+	MDRV_I8255_ADD( "ppi8255_1", scramble_ppi8255_1_intf )
 
 	/* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)

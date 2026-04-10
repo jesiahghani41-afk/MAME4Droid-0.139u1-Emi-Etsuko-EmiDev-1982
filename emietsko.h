@@ -12,7 +12,7 @@
 #define __EMIETSKO_H__
 
 #include "emu.h"
-#include "machine/8255ppi.h"
+#include "machine/i8255.h"
 
 /* --- Driver State Class --- */
 class emietsko_state : public driver_device
@@ -39,7 +39,7 @@ public:
 	UINT8    m_sound_nmi_enabled;
 };
 
-/* --- External Declarations from Galaxian/Scramble hardware --- */
+/* --- External Declarations from Scramble hardware --- */
 
 /* Video functions */
 PALETTE_INIT( galaxold );
@@ -56,8 +56,8 @@ WRITE8_HANDLER( galaxold_coin_counter_w );
 WRITE8_HANDLER( galaxold_stars_enable_w );
 
 /* PPI Interfaces */
-extern const ppi8255_interface scramble_ppi8255_0_intf;
-extern const ppi8255_interface scramble_ppi8255_1_intf;
+extern const i8255_interface scramble_ppi8255_0_intf;
+extern const i8255_interface scramble_ppi8255_1_intf;
 
 /* Sound handlers */
 WRITE8_HANDLER( ay8910_address_0_w );
