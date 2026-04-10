@@ -25,11 +25,11 @@
 static ADDRESS_MAP_START( emietsko_map, ADDRESS_SPACE_PROGRAM, 8 )
 	AM_RANGE(0x0000, 0x3fff) AM_ROM
 	AM_RANGE(0x4000, 0x47ff) AM_RAM
-	AM_RANGE(0x4800, 0x4bff) AM_RAM_WRITE(galaxold_videoram_w) AM_BASE(&galaxold_videoram)
+	AM_RANGE(0x4800, 0x4bff) AM_RAM_WRITE(galaxold_videoram_w) AM_BASE_MEMBER(emietsko_state, m_videoram)
 	AM_RANGE(0x4c00, 0x4fff) AM_READWRITE(galaxold_videoram_r, galaxold_videoram_w)	/* mirror address */
-	AM_RANGE(0x5000, 0x503f) AM_RAM_WRITE(galaxold_attributesram_w) AM_BASE(&galaxold_attributesram)
-	AM_RANGE(0x5040, 0x505f) AM_RAM AM_BASE(&galaxold_spriteram) AM_SIZE(&galaxold_spriteram_size)
-	AM_RANGE(0x5060, 0x507f) AM_RAM AM_BASE(&galaxold_bulletsram) AM_SIZE(&galaxold_bulletsram_size)
+	AM_RANGE(0x5000, 0x503f) AM_RAM_WRITE(galaxold_attributesram_w) AM_BASE_MEMBER(emietsko_state, m_attributesram)
+	AM_RANGE(0x5040, 0x505f) AM_RAM AM_BASE_MEMBER(emietsko_state, m_spriteram) AM_SIZE_MEMBER(emietsko_state, m_spriteram_size)
+	AM_RANGE(0x5060, 0x507f) AM_RAM AM_BASE_MEMBER(emietsko_state, m_bulletsram) AM_SIZE_MEMBER(emietsko_state, m_bulletsram_size)
 	AM_RANGE(0x5080, 0x50ff) AM_RAM
 	AM_RANGE(0x6801, 0x6801) AM_WRITE(galaxold_nmi_enable_w)
 	AM_RANGE(0x6802, 0x6802) AM_WRITE(galaxold_coin_counter_w)
@@ -98,6 +98,7 @@ INPUT_PORTS_END
 
 static MACHINE_DRIVER_START( emietsko )
 	/* basic machine hardware */
+	MDRV_DRIVER_DATA(emietsko_state)
 	MDRV_CPU_ADD("maincpu", Z80, 18432000/6)	/* 3.072 MHz */
 	MDRV_CPU_PROGRAM_MAP(emietsko_map)
 	MDRV_CPU_VBLANK_INT("screen", nmi_line_pulse)
