@@ -6,17 +6,21 @@
   Hardware: Konami Scramble Hardware
   Genre: Action/Platform (Vertical Screen)
   Players: 1-2
-  Control: 4-Way Joystick, 2 Button
-
-  Driver by EmiDev (2026 Integration for MAME4Droid 0.139u1)
+  Control: 4-Way Joystick, 1 Button
+  
+  MAME 0.139u1 Driver Integration
 
 ***************************************************************************/
 
 #include "emu.h"
 #include "cpu/z80/z80.h"
+#include "cpu/s2650/s2650.h"
 #include "sound/ay8910.h"
 #include "machine/8255ppi.h"
 #include "includes/galaxold.h"
+#include "emietsko.h"
+
+/* ----------------- Memory Maps ----------------- */
 
 static ADDRESS_MAP_START( emietsko_map, ADDRESS_SPACE_PROGRAM, 8 )
 	AM_RANGE(0x0000, 0x3fff) AM_ROM
@@ -36,6 +40,20 @@ static ADDRESS_MAP_START( emietsko_map, ADDRESS_SPACE_PROGRAM, 8 )
 	AM_RANGE(0x8100, 0x8103) AM_DEVREADWRITE("ppi8255_0", ppi8255_r, ppi8255_w)
 	AM_RANGE(0x8200, 0x8203) AM_DEVREADWRITE("ppi8255_1", ppi8255_r, ppi8255_w)
 ADDRESS_MAP_END
+
+static ADDRESS_MAP_START( emietsko_sound_map, ADDRESS_SPACE_PROGRAM, 8 )
+	AM_RANGE(0x0000, 0x1fff) AM_ROM
+	AM_RANGE(0x8000, 0x83ff) AM_RAM
+ADDRESS_MAP_END
+
+static ADDRESS_MAP_START( emietsko_sound_io_map, ADDRESS_SPACE_IO, 8 )
+	AM_RANGE(0x10, 0x10) AM_WRITE(ay8910_address_0_w)
+	AM_RANGE(0x20, 0x20) AM_READWRITE(ay8910_read_port_0_r, ay8910_data_0_w)
+	AM_RANGE(0x40, 0x40) AM_WRITE(ay8910_address_1_w)
+	AM_RANGE(0x80, 0x80) AM_READWRITE(ay8910_read_port_1_r, ay8910_data_1_w)
+ADDRESS_MAP_END
+
+/* ----------------- Input Ports ----------------- */
 
 static INPUT_PORTS_START( emietsko )
 	PORT_START("IN0")
@@ -76,18 +94,24 @@ static INPUT_PORTS_START( emietsko )
 	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_UNKNOWN )
 INPUT_PORTS_END
 
+/* ----------------- Machine Driver ----------------- */
+
 static MACHINE_DRIVER_START( emietsko )
 	/* basic machine hardware */
 	MDRV_CPU_ADD("maincpu", Z80, 18432000/6)	/* 3.072 MHz */
 	MDRV_CPU_PROGRAM_MAP(emietsko_map)
 	MDRV_CPU_VBLANK_INT("screen", nmi_line_pulse)
 
+	MDRV_CPU_ADD("audiocpu", Z80, 14318180/8)	/* 1.789772 MHz */
+	MDRV_CPU_PROGRAM_MAP(emietsko_sound_map)
+	MDRV_CPU_IO_MAP(emietsko_sound_io_map)
+
 	MDRV_PPI8255_ADD( "ppi8255_0", scramble_ppi8255_0_intf )
 	MDRV_PPI8255_ADD( "ppi8255_1", scramble_ppi8255_1_intf )
 
 	/* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
-	MDRV_SCREEN_REFRESH_RATE(16000.0/132/1 entry.0)
+	MDRV_SCREEN_REFRESH_RATE(16000.0/132/128.0)
 	MDRV_SCREEN_VBLANK_TIME(ATTOSECONDS_IN_USEC(0))
 	MDRV_SCREEN_FORMAT(BITMAP_FORMAT_INDEXED16)
 	MDRV_SCREEN_SIZE(32*8, 32*8)
@@ -101,8 +125,14 @@ static MACHINE_DRIVER_START( emietsko )
 	MDRV_VIDEO_UPDATE(galaxold)
 
 	/* sound hardware */
-	MDRV_IMPORT_FROM(scramble_sound)
+	MDRV_SPEAKER_STANDARD_MONO("mono")
+	MDRV_SOUND_ADD("ay1", AY8910, 14318180/8)
+	MDRV_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.50)
+	MDRV_SOUND_ADD("ay2", AY8910, 14318180/8)
+	MDRV_SOUND_ROUTE(ALL_OUTPUTS, "mono", 0.50)
 MACHINE_DRIVER_END
+
+/* ----------------- ROM Definitions ----------------- */
 
 ROM_START( emietsko )
 	ROM_REGION( 0x10000, "maincpu", 0 )
@@ -119,4 +149,6 @@ ROM_START( emietsko )
 	ROM_LOAD( "emi_clr.bin",  0x0000, 0x0020, CRC(00000000) SHA1(0000000000000000000000000000000000000000) )
 ROM_END
 
-GAME( 1982, emietsko, 0, emietsko, emietsko, scramble_ppi, ROT90, "EmiDev", "Emi Etsuko", GAME_SUPPORTS_SAVE )
+/* ----------------- Game Driver ----------------- */
+
+GAME( 1982, emietsko, 0, emietsko, emietsko, 0, ROT90, "EmiDev", "Emi Etsuko", GAME_SUPPORTS_SAVE )
